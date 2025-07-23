@@ -1,14 +1,15 @@
 import userModel from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import transporter from "../config/nodeMailer.js";
 
 // register controller
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
 
- if (!name || !email || !password) {
-  return res.json({ message: "Please fill in all fields.", success: false });
-}
+  if (!name || !email || !password) {
+    return res.json({ message: "Please fill in all fields.", success: false });
+  }
   try {
     //check if user exist or not
     const existingUser = await userModel.findOne({ email });
@@ -31,6 +32,16 @@ export const register = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+    // send email for verification
+    const mailOption = {
+      from: process.env.SENDER_EMAIL,
+      to: user.email,
+      subject: "Verify your email",
+      text: `welcome to the dev website, Your account has been created with email id " ${email}`,
+    };
+    await transporter.sendMail(mailOption);
+
     res.json({ msg: "User created successfully.", success: true });
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -86,7 +97,7 @@ export const logout = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    return res.json({success : true, message : 'logged out'})
+    return res.json({ success: true, message: "logged out" });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }
