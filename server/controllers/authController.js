@@ -6,18 +6,14 @@ import jwt from "jsonwebtoken";
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
 
-  if (!name || !email || password) {
-    return res
-      .status(400)
-      .json({ msg: "Please fill in all fields.", success: false });
-  }
+ if (!name || !email || !password) {
+  return res.json({ message: "Please fill in all fields.", success: false });
+}
   try {
     //check if user exist or not
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ msg: "Email already exists.", success: false });
+      return res.json({ message: "Email already exists.", success: false });
     }
     // password encription
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -80,7 +76,7 @@ export const login = async (req, res) => {
   }
 };
 
-// ======= logout controller =============//
+// ======= logout controller ============= //
 
 export const logout = async (req, res) => {
   try {
